@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+sync
+DEV="/dev/mmcblk1"
+umount /dev/mmcblk1p1
+
+echo "Preparando para formatear"
+fdisk $DEV <<EOF
+p
+d
+n
+
+
+t
+83
+w
+EOF
+sleep 5
+mkfs.ext4 ${DEV}p1
+echo "SDcard formateada en Ext4..."
+sync; sync
+e2fsck -f -y ${DEV}p1
+echo "Montando SDcard..."
+if [ ! -d /mnt/sdcard ]; then
+mkdir /mnt/sdcard
+fi
+mount ${DEV}p1 /mnt/sdcard
+sync; sync
+sleep 5
+echo "Comienza backup..."
+dd if=/dev/mmcblk0p7 of=/mnt/sdcard/backup.img status=progress  #
+echo "Finalizado!"
+umount /dev/mmcblk1p1
